@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Bootstrap 3, from LayoutIt!</title>
+
+<meta name="description"
+	content="Source code generated using layoutit.com">
+<meta name="author" content="LayoutIt!">
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+<link href="css/index.css" rel="stylesheet">
+<link href="css/iThing.css" rel="stylesheet">
+<script src="js/jquery.min.js"></script>
+<script src="js/transition.js"></script>
+<script src="js/collapse.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/bootstrap-datetimepicker.min.js"></script>
+<script src="js/index_search.js"></script>
+<script type="text/javascript" src="js/prettify.js"></script>
+<script src="js/bootstrap-slider.min.js"></script>
+
+<link href="css/default.css" rel="stylesheet">
+<link href="css/bootstrap-slider.min.css" rel="stylesheet">
+<!-- echarts -->
+<script src="./js/echart/echarts.js"></script>
+</head>
+<body data-spy="scroll" data-target=".navbar">
+	<!-- Nav -->
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/RCBA"><span id="tag"
+					class="label label-success">RCBA V0.31</span></a>
+			</div>
+			<ul class="nav navbar-nav">
+				<li class="active" id="navli1"><a href="#indexPanel1"><span
+						class="glyphicon glyphicon-stats"></span> Time Travel</a></li>
+				<li id="navli2"><a href="#indexPanel2"><span
+						class="glyphicon glyphicon-cloud"></span> RealTime Event</a></li>
+				<li><a href="/RCBA/about.html"><span
+						class="glyphicon glyphicon-heart"></span> About RCBA</a></li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container" style="padding-top: 65px">
+		<div class="col-md-12">
+			<img alt="80x80" src="img/dase.jpg" class="img-rounded" /> <input
+				id="keyword" type="text" class="indexInput" value=""
+				onfocus="if(value=='') {value=''}"
+				onblur="if (value=='') {value='weibo'}" placeholder="Search">
+			<label>K:</label> <input type="text" id="topk" value="10"
+				class='topkInput'> <select class='qtypeStyle' id="queryType">
+				<option>weighted</option>
+				<option>or</option>
+				<option>and</option>
+			</select>
+			<button id="searchBtn" class="btn btn-lg btn-default"
+				onclick="tsearch()">
+				<span class="glyphicon glyphicon-search"></span> 搜索
+			</button>
+		</div>
+
+
+		<div class="col-md-12">
+			<div class="col-md-4">
+				<div class="panel panel-default" style="height: 200px">
+					<div class="panel-heading">
+						<h5>
+							<span class="glyphicon glyphicon-signal"></span> Event
+						</h5>
+					</div>
+					<div class="panel-body">
+						<div id="eventInfo" class="event-panel"></div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Tweets</h3>
+					</div>
+					<div class="panel-body">
+						<div id="tweets" class="pre-scrollable hottweetcontent"></div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div>
+					<label for="ex1" style="margin: 10px">time window:
+						</h5> <label id="starttime"></label> <input id="ex1"
+						data-slider-id='ex1Slider' type="text" style='width: 350px' /><label
+						id="endtime"></label>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4>
+							<span class="glyphicon glyphicon-signal"></span> Tweet TimeSeries
+						</h4>
+					</div>
+					<div class="panel-body">
+						<div id="tweet-timeSeriesChart" class="event-panel"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<hr>
+	<div class="row clearfix text-center">
+		Made by <a href="http://dase.ecnu.edu.cn/">Center for Cloud
+			Computing and Big Data </a>.
+		<p>xiafan68@gmail.com</p>
+	</div>
+	<script type="text/javascript">
+		$('#ex1').slider({
+			min : 1254326400000,
+			max : function() {
+				var curTime = new Date();
+				return curTime.getTime();
+			}(),
+			value : function() {
+				var ret = [ 1254326400000, 10 ];
+				var curTime = new Date();
+				ret[1] = curTime.getTime();
+				return ret;
+			}(),
+			step : 3600 * 1000,
+			formatter : function(value) {
+				var start = new Date();
+				start.setTime(value[0]);
+				var end = new Date();
+				end.setTime(value[1]);
+				return start.toLocaleString() + "--" + end.toLocaleString();
+			}
+		});
+	</script>
+</body>
+</html>
