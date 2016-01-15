@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Bootstrap 3, from LayoutIt!</title>
+
+<meta name="description"
+	content="Source code generated using layoutit.com">
+<meta name="author" content="LayoutIt!">
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+<link href="css/index.css" rel="stylesheet">
+<link href="css/iThing.css" rel="stylesheet">
+<script src="js/jquery/jquery.min.js"></script>
+<script src="js/bootstrap/transition.js"></script>
+<script src="js/bootstrap/collapse.js"></script>
+<script src="js/bootstrap/moment.js"></script>
+<script src="js/bootstrap/bootstrap.min.js"></script>
+<script src="js/bootstrap/bootstrap-datetimepicker.min.js"></script>
+<script src="js/querysum.js"></script>
+<script src="js/options.js"></script>
+<script type="text/javascript" src="js/bootstrap/prettify.js"></script>
+<script src="js/bootstrap/bootstrap-slider.min.js"></script>
+<script type="text/javascript" src="js/d3/d3.js"></script>
+<script type="text/javascript" src="js/d3/d3.layout.cloud.js"></script>
+
+<link href="css/default.css" rel="stylesheet">
+<link href="css/bootstrap-slider.min.css" rel="stylesheet">
+<!-- echarts -->
+<script src="./js/echart/echarts.js"></script>
+</head>
+<body data-spy="scroll" data-target=".navbar">
+	<!-- Nav -->
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/RCBA"><span id="tag"
+					class="label label-success">RCBA V0.31</span></a>
+			</div>
+			<ul class="nav navbar-nav">
+				<li class="active" id="navli1"><a href="#indexPanel1"><span
+						class="glyphicon glyphicon-stats"></span> Time Travel</a></li>
+				<li id="navli2"><a href="#indexPanel2"><span
+						class="glyphicon glyphicon-cloud"></span> RealTime Event</a></li>
+				<li><a href="/RCBA/about.html"><span
+						class="glyphicon glyphicon-heart"></span> About RCBA</a></li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container" style="padding-top: 65px">
+		<div class="col-md-12 form-inline">
+			<img alt="80x80" src="img/dase.jpg" class="img-rounded" /> <input
+				id="keyword" type="text" class="indexInput" value=""
+				onfocus="if(value=='') {value=''}"
+				onblur="if (value=='') {value='新年'}" placeholder="Search"> <label>K:</label>
+			<input type="text" id="topk" value="10" class='topkInput'> <select
+				class='qtypeStyle' id="queryType">
+				<option>weighted</option>
+				<option>or</option>
+				<option>and</option>
+			</select>
+			<button id="searchBtn" class="btn btn-lg btn-default"
+				onclick="querySum()">
+				<span class="glyphicon glyphicon-search"></span> Search
+			</button>
+		</div>
+		<div class="col-md-10 col-md-offset-1 form-inline">
+			<div class="row">
+				<div class="col-md-2 text-right" style="margin: 0px; padding: 0px;">
+					<label>Time window:</label>
+				</div>
+				<div class="col-md-2" style="margin: 0px; padding: 0px; width: 17%">
+					<label id="starttime"></label>
+				</div>
+				<div class="col-md-5" style="margin: 0px; padding: 0px">
+					<input id="ex1" data-slider-id='ex1Slider' type="text"
+						style='width: 350px' />
+				</div>
+				<div class="col-md-2" style="margin: 0px; padding: 0px; width: 17%">
+					<label id="endtime"></label>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-12">
+		<div class="col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Event Timeline</h3>
+				</div>
+				<div class="panel-body">
+					<div id="tweets" class="pre-scrollable hottweetcontent"></div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-8">
+			<div>
+				<label for="ex1" style="margin: 10px">Analytics
+					</h5> <label id="starttime"></label>
+			</div>
+			<div class="col-md-12">
+				<!-- wordCloud & Mood -->
+				<div id="eventPanel4" class="board event-panel">
+					<!-- title -->
+					<div class="row clearfix">
+						<div class="col-md-8 col-sm-8 col-sx-8">
+							<div class="text-left text-muted">
+								<h4>
+									<span class="glyphicon glyphicon-cloud"></span> WordCloud &
+									Mood
+								</h4>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4 col-sx-4 text-right">
+							<h4>
+								<a href="#moodAbout" data-toggle="modal"><span
+									class="glyphicon glyphicon-zoom-in"></span></a>
+							</h4>
+						</div>
+					</div>
+					<!-- content -->
+					<div class="board-content">
+						<div class="row clearfix">
+							<div class="col-md-6 col-sm-6 col-xs-6">
+								<div class="chart-title">
+									<small>Word Clouds</small>
+								</div>
+								<div id="event-cloudChart" class="event-cloudChart"></div>
+								<div>
+									<p id="p_keyword">
+										<label for="keyword">keywords:</label> <input id="keyword"
+											type='text' name="as_q" value="" /> <input id="Go"
+											type="submit" value="Search" name='btnG' onclick="kwsearch()" />
+									</p>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-6">
+								<div class="chart-title">
+									<small>Popular Mood</small>
+								</div>
+								<div id="event-moodChart" class="event-chart1"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Event TimeSeries -->
+				<div id="eventPanel1" class="board event-panel">
+					<!-- title -->
+					<div class="row clearfix">
+						<div class="col-md-8 col-sm-8 col-sx-8">
+							<div class="text-left text-muted">
+								<h4>
+									<span class="glyphicon glyphicon-signal"></span> Event
+									TimeSeries
+								</h4>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4 col-sx-4 text-right">
+							<h4>
+								<a href="#timeSeriesAbout" data-toggle="modal"><span
+									class="glyphicon glyphicon-zoom-in"></span></a>
+							</h4>
+						</div>
+					</div>
+					<!-- content -->
+					<div class="board-content">
+						<div class="row clearfix">
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div id="event-timeSeriesChart" class="event-chart1"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- User Analytics -->
+				<div id="eventPanel2" class="board event-panel">
+					<!-- title -->
+					<div class="row clearfix">
+						<div class="col-md-8 col-sm-8 col-sx-8">
+							<div class="text-left text-muted">
+								<h4>
+									<span class="glyphicon glyphicon-user"></span> User Analytics
+								</h4>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4 col-sx-4 text-right">
+							<h4>
+								<a href="#userAbout" data-toggle="modal"><span
+									class="glyphicon glyphicon-zoom-in"></span></a>
+							</h4>
+						</div>
+					</div>
+					<!-- population -->
+					<div class="board-content">
+						<div class="row clearfix">
+							<div class="col-md-6 col-sm-6 col-xs-6">
+								<div class="chart-title">
+									<small>Fraction of Gender</small>
+								</div>
+								<div id="event-userChart1" class="event-chart2"></div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-6">
+								<div class="chart-title">
+									<small>Fraction of Vip User</small>
+								</div>
+								<div id="event-userChart2" class="event-chart2"></div>
+							</div>
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div class="chart-title">
+									<small>Distribution of Platform</small>
+								</div>
+								<div id="event-userChart3" class="event-chart2"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- location Discussion-->
+				<div id="eventPanel3" class="board event-panel">
+					<!-- title -->
+					<div class="row clearfix">
+						<div class="col-md-8 col-sm-8 col-sx-8">
+							<div class="text-left text-muted">
+								<h4>
+									<span class="glyphicon glyphicon-road"></span> Location
+									Discussion
+								</h4>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4 col-sx-4 text-right">
+							<h4>
+								<a href="#locationAbout" data-toggle="modal"><span
+									class="glyphicon glyphicon-zoom-in"></span></a>
+							</h4>
+						</div>
+					</div>
+					<!-- content -->
+					<div class="board-content">
+						<div class="row clearfix">
+							<div class="col-md-7 col-sm-7 col-xs-7">
+								<div class="chart-title" style="margin-bottom: 10px">
+									<small>Number of People in Location</small>
+								</div>
+								<div id="event-locationChart" class="event-chart1"></div>
+							</div>
+							<div class="col-md-5 col-sm-5 col-xs-5">
+								<div class="chart-title" style="margin-bottom: 10px">
+									<small>Hot Origin Status</small>
+								</div>
+								<div id="event-locationTweet"
+									class="pre-scrollable list-group-item event-chart1"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+	<!-- Footer -->
+	<hr>
+	<div class="row clearfix text-center">
+		Made by <a href="http://dase.ecnu.edu.cn/">Center for Cloud
+			Computing and Big Data </a>.
+		<p>xiafan68@gmail.com</p>
+	</div>
+</body>
+</html>

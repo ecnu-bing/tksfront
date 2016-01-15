@@ -7,13 +7,13 @@
 		<groupId>dase</groupId>
 		<artifactId>weibostack</artifactId>
 		<version>0.0.1</version>
-<relativePath>../weibostack/pom.xml</relativePath>
+		<relativePath>../weibostack/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>tksfront</artifactId>
 	<version>0.0.1</version>
 	<packaging>war</packaging>
-	<name>ocba_front Maven Webapp</name>
+	<name>tksfront Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<build>
 		<finalName>tksfront</finalName>
@@ -34,13 +34,18 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fanxia</groupId>
+			<groupId>dase</groupId>
 			<artifactId>microblogdao</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>fanxia</groupId>
+			<groupId>dase</groupId>
 			<artifactId>socialtsquery-client</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>dase</groupId>
+			<artifactId>common</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
@@ -71,6 +76,20 @@
 			<artifactId>struts2-json-plugin</artifactId>
 			<version>2.3.16.3</version>
 		</dependency>
-
+		<dependency>
+			<groupId>nz.ac.waikato.cms.weka</groupId>
+			<artifactId>weka-dev</artifactId>
+			<version>3.7.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -70,6 +70,14 @@ footer {
 	min-height: 500px;
 }
 
+.event-chart1 {
+	height: 400px;
+}
+
+.event-chart2 {
+	height: 300px;
+}
+
 .hottweet {
 	border: 1px solid #D3D3D3;
 	border-radius: 5px;

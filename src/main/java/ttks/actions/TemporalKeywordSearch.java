@@ -15,11 +15,12 @@ import org.apache.thrift.transport.TSocket;
 
 import com.opensymphony.xwork2.ActionSupport;
 
+import common.ConfigLoader;
 import searchapi.QueryType;
 import searchapi.TKeywordQuery;
 import searchapi.TweetService;
 import searchapi.TweetService.Client;
-import xiafan.util.DateUtil;
+import util.DateUtil;
 
 @ParentPackage("json")
 public class TemporalKeywordSearch extends ActionSupport {
@@ -57,24 +58,27 @@ public class TemporalKeywordSearch extends ActionSupport {
 
 	@Action(value = "ttks", results = { @Result(name = "success", type = "json") })
 	public String execQuery() throws Exception {
+		mids = execQuery(keyword, topk, start, end, QueryType.valueOf(queryType));
+		return "success";
+	}
+
+	public static List<Long> execQuery(String keyword, int topk, long start, long end, QueryType queryType) {
+		List<Long> mids = new ArrayList<Long>();
 		try {
-			mids = new ArrayList<Long>();
+
 			// mids.add(1l);
-			TSocket transport = new TSocket("127.0.0.1", 10000);
+			TSocket transport = new TSocket(ConfigLoader.props.getProperty("indexServer", "127.0.0.1"),
+					Short.parseShort(ConfigLoader.props.getProperty("indexPort", "10000")));
 			TProtocol protocol = new TBinaryProtocol(transport);
 			Client client = new TweetService.Client(protocol);
 			transport.open();
-			if (queryType == null)
-				queryType = QueryType.WEIGHTED.toString();
-			else
-				queryType = queryType.toUpperCase();
 			mids = client.search(new TKeywordQuery(keyword, topk, DateUtil.diffByWeiboStartTime(start),
-					DateUtil.diffByWeiboStartTime(end), QueryType.valueOf(queryType)));
+					DateUtil.diffByWeiboStartTime(end), queryType));
 			transport.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return "success";
+		return mids;
 	}
 
 }

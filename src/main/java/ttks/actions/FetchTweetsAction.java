@@ -13,12 +13,18 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 
+import com.opensymphony.xwork2.ActionSupport;
+
 import casdb.CassandraConn;
 import casdb.TweetDao;
+import common.ConfigLoader;
+import summarization.EventSummarization;
+import summarization.TimeSeries;
+import util.DateUtil;
 import weibo4j.org.json.JSONObject;
 
 @ParentPackage("json")
-public class FetchTweetsAction {
+public class FetchTweetsAction extends ActionSupport{
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	String mids;
 	Map<String, String> tweets = new HashMap<String, String>();
@@ -54,12 +60,13 @@ public class FetchTweetsAction {
 	@Action(value = "tweets", results = { @Result(name = "success", type = "json") })
 	public String execQuery() throws Exception {
 		CassandraConn conn = new CassandraConn();
-		conn.connect("10.11.1.212");
+		conn.connect(ConfigLoader.props.getProperty("cassdb", "127.0.0.1"));
 		TweetDao tweetDao = new TweetDao(conn);
 		TreeSet<Long> axis = new TreeSet<Long>();
 		Map<String, List<long[]>> curSeries = new HashMap<String, List<long[]>>();
 		// axis.headSet(toElement)
 		try {
+			List<JSONObject> objs = new ArrayList<JSONObject>();
 			for (String mid : mids.split(",")) {
 				// fetch status
 				String status = tweetDao.getStatusByMid(mid);
@@ -71,14 +78,15 @@ public class FetchTweetsAction {
 						JSONObject statusReply = new JSONObject();
 						statusReply.put("text", obj.getString("text"));
 						statusReply.put("uname", obj.getString("uname"));
+						statusReply.put("mid", obj.getString("mid"));
+						objs.add(statusReply);
 						statusStr = statusReply.toString();
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
 					tweets.put(mid, statusStr);
 				} else
-					tweets.put(mid,
-							"{text:'sorry, the content of the tweet is not fetched', uname:'haha'}");
+					tweets.put(mid, "{text:'sorry, the content of the tweet is not fetched', uname:'haha'}");
 				// fetch time series
 				List<long[]> sery = tweetDao.queryTimeSeries(mid, startTime, endTime);
 				curSeries.put(mid, sery);
@@ -86,6 +94,13 @@ public class FetchTweetsAction {
 					axis.add(point[0]);
 				}
 			}
+			EventSummarization sum = new EventSummarization(conn);
+			List<TimeSeries> ts = new ArrayList<TimeSeries>();
+			endTime = DateUtil.roundByHour(endTime);
+			for (JSONObject obj : objs) {
+				ts.add(new TimeSeries(curSeries.get(obj.getString("mid")), startTime, endTime));
+			}
+			//sum.genTimeLine(objs, ts, startTime, endTime);
 
 			for (Entry<String, List<long[]>> entry : curSeries.entrySet()) {
 				List<Integer> list = new ArrayList<Integer>(axis.size());
