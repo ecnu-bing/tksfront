@@ -58,7 +58,7 @@ public class TemporalKeywordSearch extends ActionSupport {
 
 	@Action(value = "ttks", results = { @Result(name = "success", type = "json") })
 	public String execQuery() throws Exception {
-		mids = execQuery(keyword, topk, start, end, QueryType.valueOf(queryType));
+		mids = execQuery(keyword, topk, start, end, QueryType.valueOf(queryType.toUpperCase()));
 		return "success";
 	}
 
