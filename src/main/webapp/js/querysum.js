@@ -73,29 +73,42 @@ function handSummary(jsonData){
 
 function displaySum(idx) {
 	handleDataOfCloud(eventTimeline.events[idx]);
-	displayHotTweets(eventTimeline.events[idx].statuses);
+	var statuses = eventTimeline.events[idx].statuses;
+	displayHotTweets(statuses);
+	var omids=[];
+	var omidsMap={};
+	for(sIdx in statuses){
+		if (statuses[idx].omid <0){
+			omidsMap[statuses[sIdx].mid]=1;
+		}else{
+			omidsMap[statuses[sIdx].omid]=1;
+		}
+	}
+	for(omid in omidsMap){
+		omids.push(omid);
+	}
 	$.post("rtstats/tseries.do", {
-		mids : eventTimeline.events[idx].mids.join(","),
+		mids : omids.join(","),
 		startTime : eventTimeline.events[idx].startTime,
 		endTime : eventTimeline.events[idx].endTime,
 	}, handleEventTimeSeriesData);
 
 	// user related
 	$.post("rtstats/user.do", {
-		mids : eventTimeline.events[idx].mids.join(","),
+		mids : omids.join(","),
 		startTime : eventTimeline.events[idx].startTime,
 		endTime : eventTimeline.events[idx].endTime,
 	}, handleUserData);
 	
 	// loc
 	$.post("rtstats/loc.do", {
-		mids : eventTimeline.events[idx].mids.join(","),
+		mids : omids.join(","),
 		startTime : eventTimeline.events[idx].startTime,
 		endTime : eventTimeline.events[idx].endTime,
 	}, handleLocationData);
 	// mood
 	$.post("rtstats/mood.do", {
-		mids : eventTimeline.events[idx].mids.join(","),
+		mids : omids.join(","),
 		startTime : eventTimeline.events[idx].startTime,
 		endTime : eventTimeline.events[idx].endTime,
 	}, handleDataOfMood);

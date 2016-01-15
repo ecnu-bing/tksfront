@@ -61,6 +61,7 @@ public class EventSumAction {
 					statusReply.put("text", obj.getString("text"));
 					statusReply.put("uname", obj.getString("uname"));
 					statusReply.put("mid", Long.parseLong(obj.getString("mid")));
+					statusReply.put("omid", Long.parseLong(obj.getString("omid")));
 					objs.add(statusReply);
 					List<long[]> sery = tweetDao.queryTimeSeries(mid, startTime, endTime);
 					ts.add(new TimeSeries(sery, startTime, endTime));
