@@ -141,10 +141,17 @@ public class EventSummarization {
 			cluster = new EM();
 			try {
 				String[] options = new String[2];
-				options[0] = "-I"; // max. iterations
-				options[1] = "40";
-				// options[2] = "-N";
-				// options[3] = "10";
+				if (context.sumNum > 0) {
+					options = new String[4];
+					options[0] = "-I"; // max. iterations
+					options[1] = "40";
+					options[2] = "-N";
+					options[3] = Integer.toString(context.sumNum);
+				} else {
+					options = new String[2];
+					options[0] = "-I"; // max. iterations
+					options[1] = "40";
+				}
 				cluster.setOptions(options);
 				cluster.buildClusterer(dataset);
 			} catch (Exception e) {
@@ -157,7 +164,7 @@ public class EventSummarization {
 				options[0] = "-L"; // max. iterations
 				options[1] = "Average";
 				options[2] = "-N";
-				options[3] = "3";
+				options[3] = Integer.toString(context.sumNum);
 				cluster.setOptions(options);
 				cluster.buildClusterer(dataset);
 			} catch (Exception e) {
