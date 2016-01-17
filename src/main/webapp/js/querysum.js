@@ -76,14 +76,14 @@ function handSummary(jsonData){
 			'<div class="timeline-heading" onclick="displaySum('+idx+')">'+
 				'<h4 class="timeline-title">'+"Title"+'</h4><p>'+
 					'<small class="text-muted"><i'+
-						'class="glyphicon glyphicon-time"></i>' +new Date(statuses[0].startTime).toLocaleString()+'</small></p></div>'+
+						'class="glyphicon glyphicon-time"></i>' +new Date(eventTimeline.events[idx].startTime).toLocaleString()+'</small></p></div>'+
 			'<div class="timeline-body">'+statuses[0].text+'</div></div></li>';
 		for(sIdx in statuses){
 			mids.push(statuses[sIdx].mid);
 		}
 		eventTimeline.events[idx].mids = mids;
 	}
-	$("#timeline").innerHTML=html;
+	$(".timeline")[0].innerHTML=html;
 	displaySum(curEventIdx);
 }
 
@@ -94,7 +94,7 @@ function displaySum(idx) {
 	var omids=[];
 	var omidsMap={};
 	for(sIdx in statuses){
-		if (statuses[idx].omid <0){
+		if (statuses[sIdx].omid <0){
 			omidsMap[statuses[sIdx].mid]=1;
 		}else{
 			omidsMap[statuses[sIdx].omid]=1;
