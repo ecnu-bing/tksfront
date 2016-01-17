@@ -55,19 +55,35 @@ function querySum() {
 		keyword : keyword,
 		startTime : startTime,
 		endTime : endTime,
+		simType:$("#simType")[0].value,
+		shouldStandard:$("#shouldStandard")[0].value,
+		clusterAlg:$("#clusterAlg")[0].value,
+		sumNum:$("#sumNum")[0].value
 	}, handSummary);
 }
 function handSummary(jsonData){
 	eventTimeline = JSON.parse(jsonData.timeline);
+	var html = "";
 	for(idx in eventTimeline.events){
 		var statuses = [];
 		var mids = [];
 		var statuses = eventTimeline.events[idx].statuses;
+		html += '<li class="timeline-inverted">'+
+		'<div class="timeline-badge">'+
+			'<i class="glyphicon glyphicon-check"></i>'+
+		'</div>'+
+		'<div class="timeline-panel">'+
+			'<div class="timeline-heading" onclick="displaySum('+idx+')">'+
+				'<h4 class="timeline-title">'+"Title"+'</h4><p>'+
+					'<small class="text-muted"><i'+
+						'class="glyphicon glyphicon-time"></i>' +new Date(statuses[0].startTime).toLocaleString()+'</small></p></div>'+
+			'<div class="timeline-body">'+statuses[0].text+'</div></div></li>';
 		for(sIdx in statuses){
 			mids.push(statuses[sIdx].mid);
 		}
 		eventTimeline.events[idx].mids = mids;
 	}
+	$("#timeline").innerHTML=html;
 	displaySum(curEventIdx);
 }
 

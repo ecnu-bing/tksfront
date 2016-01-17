@@ -13,12 +13,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections.Factory;
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
 import casdb.CassandraConn;
 import casdb.TweetDao;
 import casdb.WordDao;
 import collection.DefaultedPutMap;
+import dase.timeseries.analysis.Similarity;
+import dase.timeseries.structure.ITimeSeries;
+import dase.timeseries.structure.SparseTimeSeries;
+import dase.timeseries.structure.Standarization;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import shingle.TextShingle;
@@ -38,35 +41,36 @@ import weka.core.SparseInstance;
  * 
  * step 1: 基于词频时序，为每条微博选出热门的词频
  * 
+ * 
+ * 
+ * 到底什么算一个事件？有可能有些微博仅仅只是一些小的讨论
+ * 
  * @author xiafan
  *
  */
 public class EventSummarization {
-	private final static int EVENT_NUM = 10;
+	SumContext context;
+
 	TweetDao dao;
 	WordDao wordDao;
 	TextShingle shingle = new TextShingle(null);
-	long startTime;
-	long endTime;
-	HashMap<String, TimeSeries> term2ts = new HashMap<String, TimeSeries>();
-	List<JSONObject> statuses;
-	List<TimeSeries> ts;
-	String clusterAlg = "EM";// "EM","hie"
 
 	List<Set<String>> features;
 	List<Integer>[] cluster2Microblogs;
 	int[] clusterDist;
+	public HashMap<String, ITimeSeries> term2ts = new HashMap<String, ITimeSeries>();
 
-	public EventSummarization(CassandraConn conn) {
+	public EventSummarization(SumContext context, CassandraConn conn) {
+		this.context = context;
 		dao = new TweetDao(conn);
 		wordDao = new WordDao(conn);
 	}
 
-	public TimeLine genTimeLine(List<JSONObject> statuses, List<TimeSeries> ts, long startTime, long endTime) {
-		this.statuses = statuses;
-		this.ts = ts;
-		this.startTime = startTime;
-		this.endTime = endTime;
+	public TimeLine genTimeLine() {
+		if (context.shouldStandard) {
+			standard();
+		}
+
 		Instances dataset = genWekaData();
 		clusterMicroblogs(dataset);
 		// 生成timeline，确定每个时间点使用些什么对象？
@@ -83,7 +87,7 @@ public class EventSummarization {
 				});
 
 				for (int sIdx : cluster2Microblogs[i]) {
-					eStatues.add(statuses.get(sIdx));
+					eStatues.add(context.statuses.get(sIdx));
 					for (String term : features.get(sIdx)) {
 						sum.put(term, sum.get(term) + 1);
 					}
@@ -96,7 +100,7 @@ public class EventSummarization {
 					}
 				});
 
-				List<Long> timeRange = genEventRange(cluster2Microblogs[i], ts);
+				List<Long> timeRange = genEventRange(cluster2Microblogs[i], context.ts);
 				List<Entry<String, Integer>> sumWords = new ArrayList<Entry<String, Integer>>();
 				for (Entry<String, Integer> entry : sumList.subList(0, Math.min(30, sumList.size()))) {
 					sumWords.add(entry);
@@ -108,12 +112,20 @@ public class EventSummarization {
 		return timeline;
 	}
 
-	private List<Long> genEventRange(List<Integer> mids, List<TimeSeries> ts) {
-		TimeSeries overall = new TimeSeries();
+	private void standard() {
+		List<ITimeSeries> series = new ArrayList<ITimeSeries>();
+		for (ITimeSeries curTs : context.ts) {
+			series.add(Standarization.zscore(curTs));
+		}
+		context.ts = series;
+	}
+
+	private List<Long> genEventRange(List<Integer> mids, List<ITimeSeries> ts) {
+		ITimeSeries overall = ITimeSeries.merge(ts);
 		for (int idx : mids) {
 			overall.merge(ts.get(idx));
 		}
-		return Arrays.asList(TimeSeries.outlineRange(overall));
+		return Arrays.asList(SparseTimeSeries.outlineRange(overall));
 	}
 
 	/**
@@ -121,20 +133,20 @@ public class EventSummarization {
 	 */
 	private void clusterMicroblogs(Instances dataset) {
 		AbstractClusterer cluster = null;
-		if (clusterAlg.equals("EM")) {
+		if (context.clusterAlg.equals("EM")) {
 			cluster = new EM();
 			try {
 				String[] options = new String[2];
 				options[0] = "-I"; // max. iterations
 				options[1] = "40";
-				//options[2] = "-N";
-				//options[3] = "10";
+				// options[2] = "-N";
+				// options[3] = "10";
 				cluster.setOptions(options);
 				cluster.buildClusterer(dataset);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} else if (clusterAlg.equals("hie")) {
+		} else if (context.clusterAlg.equals("hie")) {
 			cluster = new HierarchicalClusterer();
 			try {
 				String[] options = new String[4];
@@ -172,8 +184,8 @@ public class EventSummarization {
 			}
 		});
 
-		for (int i = 0; i < statuses.size(); i++) {
-			JSONObject curStatus = statuses.get(i);
+		for (int i = 0; i < context.statuses.size(); i++) {
+			JSONObject curStatus = context.statuses.get(i);
 			try {
 				List<String> terms = shingle.shingling(curStatus.getString("text"));
 				for (String term : terms) {
@@ -195,17 +207,18 @@ public class EventSummarization {
 		features = new ArrayList<Set<String>>();
 		Set<String> termVocab = new HashSet<String>();// 词的集合
 		Map<String, Integer> wordDist = wordDist();
-		for (int i = 0; i < statuses.size(); i++) {
-			JSONObject curStatus = statuses.get(i);
+		for (int i = 0; i < context.statuses.size(); i++) {
+			JSONObject curStatus = context.statuses.get(i);
 			try {
-				List<String> terms = shingle.shingling(curStatus.getString("text"));
+				List<String> terms = shingle.shingling(curStatus.getString("text"), true);
 				Set<String> feature = new HashSet<String>();
 				for (String term : terms) {
 					if (wordDist.get(term) > 2) {
 						feature.add(term);
 						termVocab.add(term);
 					} else {
-						float prob = tsSimilarity(ts.get(i), getTermFreqSeries(term));
+						double prob = Similarity.getSim(context.simType).sim(context.ts.get(i),
+								getTermFreqSeries(term));
 						if (prob > 0.2f) {
 							feature.add(term);
 							termVocab.add(term);
@@ -238,35 +251,19 @@ public class EventSummarization {
 	}
 
 	/**
-	 * 计算两个时间序列的相似度
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	private float tsSimilarity(TimeSeries a, TimeSeries b) {
-		float ret = 0;
-		PearsonsCorrelation cor = new PearsonsCorrelation();
-		ret = (float) cor.correlation(a.toArray(), b.toArray());
-		// (float) (1.0f - GrangerTest.granger(b.toArray(), a.toArray(), 1))
-		return ret;
-
-		/*
-		 * // 可以用的方法：关联系数，granger causality test List<Long> interval =
-		 * detectEventInterval(a); return outlineProb(b, interval.get(0),
-		 * interval.get(1));
-		 */
-	}
-
-	/**
 	 * 查询每个单词对应的词频
 	 * 
 	 * @param term
 	 * @return
 	 */
-	private TimeSeries getTermFreqSeries(String term) {
+	private ITimeSeries getTermFreqSeries(String term) {
 		if (!term2ts.containsKey(term)) {
-			term2ts.put(term, new TimeSeries(wordDao.getWordFreq(term, startTime, endTime), startTime, endTime));
+			ITimeSeries ts = new SparseTimeSeries(wordDao.getWordFreq(term, context.startTime, context.endTime),
+					DateUtil.HOUR_GRANU, context.startTime, context.endTime);
+			if (context.shouldStandard) {
+				ts = Standarization.zscore(ts);
+			}
+			term2ts.put(term, ts);
 		}
 		return term2ts.get(term);
 	}
@@ -280,7 +277,7 @@ public class EventSummarization {
 	 * @return
 	 */
 
-	private float outlineProb(TimeSeries ts, long start, long end) {
+	private float outlineProb(SparseTimeSeries ts, long start, long end) {
 		long compStart = 2 * start - end;
 		long compEnd = 2 * end + start;
 
@@ -288,7 +285,7 @@ public class EventSummarization {
 		float sqSum = 0;
 		long curTime = compStart;
 		while (curTime <= compEnd) {
-			float val = ts.getValueAt(curTime);
+			double val = ts.getValueAt(curTime);
 			sum += val;
 			sqSum += val * val;
 		}
@@ -299,11 +296,26 @@ public class EventSummarization {
 		float count = 0;
 		curTime = compStart;
 		while (curTime <= end) {
-			float val = ts.getValueAt(curTime);
+			double val = ts.getValueAt(curTime);
 			if (val - exp > var) {
 				count++;
 			}
 		}
 		return count / ((end - start) / DateUtil.HOUR_GRANU);
+	}
+
+	public static class SumContext {
+		public long startTime;
+		public long endTime;
+		public List<JSONObject> statuses;
+		public List<ITimeSeries> ts;
+
+		// 聚类数
+		public int sumNum;
+
+		// 方法相关参数
+		public String clusterAlg = "EM";// "EM","hie"
+		public String simType = "";
+		public boolean shouldStandard;
 	}
 }

@@ -10,17 +10,24 @@ import org.apache.struts2.convention.annotation.Result;
 import casdb.CassandraConn;
 import casdb.TweetDao;
 import common.ConfigLoader;
+import dase.timeseries.structure.ITimeSeries;
+import dase.timeseries.structure.SparseTimeSeries;
 import net.sf.json.JSONObject;
 import searchapi.QueryType;
 import summarization.EventSummarization;
+import summarization.EventSummarization.SumContext;
 import summarization.TimeLine;
-import summarization.TimeSeries;
+import util.DateUtil;
 
 @ParentPackage("json")
 public class EventSumAction {
 	private String keyword;
 	private long startTime;
 	private long endTime;
+	private boolean shouldStandard;
+	private String clusterAlg = "EM";
+	private int sumNum = 10;
+	private String simType = "";
 
 	private String timeline;
 
@@ -40,16 +47,41 @@ public class EventSumAction {
 		this.endTime = endTime;
 	}
 
+	public void setShouldStandard(boolean shouldStandard) {
+		this.shouldStandard = shouldStandard;
+	}
+
+	public void setClusterAlg(String clusterAlg) {
+		this.clusterAlg = clusterAlg;
+	}
+
+	public void setSumNum(int sumNum) {
+		this.sumNum = sumNum;
+	}
+
+	public void setSimType(String simType) {
+		this.simType = simType;
+	}
+
 	@Action(value = "esum", results = { @Result(name = "success", type = "json") })
 	public String execQuery() throws Exception {
 		CassandraConn conn = new CassandraConn();
 		conn.connect(ConfigLoader.props.getProperty("cassdb", "127.0.0.1"));
-		EventSummarization sum = new EventSummarization(conn);
+		SumContext context = new SumContext();
+		context.clusterAlg = clusterAlg;
+		context.startTime = startTime;
+		context.endTime = endTime;
+		context.sumNum = sumNum;
+		context.shouldStandard = shouldStandard;
+		context.simType = simType;
+
+		EventSummarization sum = new EventSummarization(context, conn);
+
 		TweetDao tweetDao = new TweetDao(conn);
 		List<Long> mids = TemporalKeywordSearch.execQuery(keyword, 40, startTime, endTime, QueryType.WEIGHTED);
 
 		List<JSONObject> objs = new ArrayList<JSONObject>();
-		List<TimeSeries> ts = new ArrayList<TimeSeries>();
+		List<ITimeSeries> ts = new ArrayList<ITimeSeries>();
 		for (long cur : mids) {
 			// fetch status
 			String mid = Long.toString(cur);
@@ -64,13 +96,15 @@ public class EventSumAction {
 					statusReply.put("omid", Long.parseLong(obj.getString("omid")));
 					objs.add(statusReply);
 					List<long[]> sery = tweetDao.queryTimeSeries(mid, startTime, endTime);
-					ts.add(new TimeSeries(sery, startTime, endTime));
+					ts.add(new SparseTimeSeries(sery, DateUtil.HOUR_GRANU, startTime, endTime));
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
 		}
-		TimeLine tline = sum.genTimeLine(objs, ts, startTime, endTime);
+		context.statuses = objs;
+		context.ts = ts;
+		TimeLine tline = sum.genTimeLine();
 		try {
 			timeline = JSONObject.fromObject(tline).toString();
 		} catch (Exception ex) {

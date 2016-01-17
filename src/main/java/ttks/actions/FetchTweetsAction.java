@@ -18,13 +18,13 @@ import com.opensymphony.xwork2.ActionSupport;
 import casdb.CassandraConn;
 import casdb.TweetDao;
 import common.ConfigLoader;
+import dase.timeseries.structure.SparseTimeSeries;
 import summarization.EventSummarization;
-import summarization.TimeSeries;
 import util.DateUtil;
 import weibo4j.org.json.JSONObject;
 
 @ParentPackage("json")
-public class FetchTweetsAction extends ActionSupport{
+public class FetchTweetsAction extends ActionSupport {
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	String mids;
 	Map<String, String> tweets = new HashMap<String, String>();
@@ -94,13 +94,13 @@ public class FetchTweetsAction extends ActionSupport{
 					axis.add(point[0]);
 				}
 			}
-			EventSummarization sum = new EventSummarization(conn);
-			List<TimeSeries> ts = new ArrayList<TimeSeries>();
+			List<SparseTimeSeries> ts = new ArrayList<SparseTimeSeries>();
 			endTime = DateUtil.roundByHour(endTime);
 			for (JSONObject obj : objs) {
-				ts.add(new TimeSeries(curSeries.get(obj.getString("mid")), startTime, endTime));
+				ts.add(new SparseTimeSeries(curSeries.get(obj.getString("mid")), DateUtil.HOUR_GRANU, startTime,
+						endTime));
 			}
-			//sum.genTimeLine(objs, ts, startTime, endTime);
+			// sum.genTimeLine(objs, ts, startTime, endTime);
 
 			for (Entry<String, List<long[]>> entry : curSeries.entrySet()) {
 				List<Integer> list = new ArrayList<Integer>(axis.size());
