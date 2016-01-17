@@ -27,12 +27,17 @@ public class EventSumAction {
 	private boolean shouldStandard;
 	private String clusterAlg = "EM";
 	private int sumNum = 10;
+	private double simThreshold = 0.0;
 	private String simType = "";
 
 	private String timeline;
 
 	public String getTimeline() {
 		return timeline;
+	}
+
+	public void setSimThreshold(double simThreshold) {
+		this.simThreshold = simThreshold;
 	}
 
 	public void setKeyword(String keyword) {
@@ -74,7 +79,7 @@ public class EventSumAction {
 		context.sumNum = sumNum;
 		context.shouldStandard = shouldStandard;
 		context.simType = simType;
-
+		context.simThreshold = simThreshold;
 		EventSummarization sum = new EventSummarization(context, conn);
 
 		TweetDao tweetDao = new TweetDao(conn);

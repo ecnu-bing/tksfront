@@ -13,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections.Factory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import casdb.CassandraConn;
 import casdb.TweetDao;
@@ -49,6 +51,7 @@ import weka.core.SparseInstance;
  *
  */
 public class EventSummarization {
+	private static final Logger logger = Logger.getLogger(EventSummarization.class);
 	SumContext context;
 
 	TweetDao dao;
@@ -230,13 +233,14 @@ public class EventSummarization {
 					} else {
 						double prob = Similarity.getSim(context.simType).sim(context.ts.get(i),
 								getTermFreqSeries(term));
-						if (prob > 0.2f) {
+						if (prob > context.simThreshold) {
 							feature.add(term);
 							termVocab.add(term);
 						}
 					}
 				}
 				features.add(feature);
+				logger.info(curStatus.getString("text") + "\n" + StringUtils.join(feature, ","));
 			} catch (IOException | JSONException e) {
 				e.printStackTrace();
 			}
@@ -316,6 +320,7 @@ public class EventSummarization {
 	}
 
 	public static class SumContext {
+		public double simThreshold;
 		public long startTime;
 		public long endTime;
 		public List<JSONObject> statuses;
