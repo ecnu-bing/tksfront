@@ -58,7 +58,9 @@ function querySum() {
 		simType:$("#simType")[0].value,
 		shouldStandard:$("#shouldStandard")[0].value,
 		clusterAlg:$("#clusterAlg")[0].value,
-		sumNum:$("#sumNum")[0].value
+		sumNum:$("#sumNum")[0].value,
+		simThreshold:$("#simThreshold")[0].value,
+		topk:$("#topk")[0].value
 	}, handSummary);
 }
 function handSummary(jsonData){

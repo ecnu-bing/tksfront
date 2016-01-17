@@ -60,7 +60,7 @@
 				id="keyword" type="text" class="indexInput" value=""
 				onfocus="if(value=='') {value=''}"
 				onblur="if (value=='') {value='新年'}" placeholder="Search"> <label>K:</label>
-			<input type="text" id="topk" value="10" class='topkInput'>
+			<input type="text" id="topk" value="50" class='topkInput'>
 			<button class="btn btn-lg  btn-default" data-toggle="modal"
 				data-target="#myModal">Params</button>
 			<button id="searchBtn" class="btn btn-lg btn-default"
@@ -309,6 +309,11 @@
 						<div class="form-group">
 							<label for="sumNum">Number of memes</label> <input type="text"
 								class="form-control" id="sumNum" placeholder="10" value="10">
+						</div>
+						<div class="form-group">
+							<label for="simThreshold">Number of memes</label> <input
+								type="text" class="form-control" id="simThreshold"
+								placeholder="0.1" value="0.1">
 						</div>
 						<div class="form-group">
 							<label for="clusterAlg">Cluster Algorithm</label> <select

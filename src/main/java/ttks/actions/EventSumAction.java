@@ -22,6 +22,7 @@ import util.DateUtil;
 @ParentPackage("json")
 public class EventSumAction {
 	private String keyword;
+	private int topk;
 	private long startTime;
 	private long endTime;
 	private boolean shouldStandard;
@@ -38,6 +39,10 @@ public class EventSumAction {
 
 	public void setSimThreshold(double simThreshold) {
 		this.simThreshold = simThreshold;
+	}
+
+	public void setTopk(int topk) {
+		this.topk = topk;
 	}
 
 	public void setKeyword(String keyword) {
@@ -83,7 +88,7 @@ public class EventSumAction {
 		EventSummarization sum = new EventSummarization(context, conn);
 
 		TweetDao tweetDao = new TweetDao(conn);
-		List<Long> mids = TemporalKeywordSearch.execQuery(keyword, 40, startTime, endTime, QueryType.WEIGHTED);
+		List<Long> mids = TemporalKeywordSearch.execQuery(keyword, topk, startTime, endTime, QueryType.WEIGHTED);
 
 		List<JSONObject> objs = new ArrayList<JSONObject>();
 		List<ITimeSeries> ts = new ArrayList<ITimeSeries>();
