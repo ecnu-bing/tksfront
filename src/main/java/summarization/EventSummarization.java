@@ -67,8 +67,9 @@ public class EventSummarization {
 	}
 
 	public TimeLine genTimeLine() {
+		List<ITimeSeries> oSer = context.ts;
 		if (context.shouldStandard) {
-			standard();
+			oSer = standard();
 		}
 
 		Instances dataset = genWekaData();
@@ -100,7 +101,7 @@ public class EventSummarization {
 					}
 				});
 
-				List<Long> timeRange = genEventRange(cluster2Microblogs[i], context.ts);
+				List<Long> timeRange = genEventRange(cluster2Microblogs[i], oSer);
 				List<Entry<String, Integer>> sumWords = new ArrayList<Entry<String, Integer>>();
 				for (Entry<String, Integer> entry : sumList.subList(0, Math.min(30, sumList.size()))) {
 					sumWords.add(entry);
@@ -112,12 +113,15 @@ public class EventSummarization {
 		return timeline;
 	}
 
-	private void standard() {
+	private List<ITimeSeries> standard() {
+		List<ITimeSeries> ret = new ArrayList<ITimeSeries>();
 		List<ITimeSeries> series = new ArrayList<ITimeSeries>();
 		for (ITimeSeries curTs : context.ts) {
 			series.add(Standarization.zscore(curTs));
 		}
+		ret = context.ts;
 		context.ts = series;
+		return ret;
 	}
 
 	private List<Long> genEventRange(List<Integer> mids, List<ITimeSeries> ts) {
