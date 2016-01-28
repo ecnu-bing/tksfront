@@ -26,7 +26,8 @@ import dase.timeseries.structure.SparseTimeSeries;
 import dase.timeseries.structure.Standarization;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import shingle.TextShingle;
+import shingle.ITextShingle;
+import shingle.ShingleFactory;
 import util.DateUtil;
 import weka.clusterers.AbstractClusterer;
 import weka.clusterers.EM;
@@ -56,7 +57,7 @@ public class EventSummarization {
 
 	TweetDao dao;
 	WordDao wordDao;
-	TextShingle shingle = new TextShingle(null);
+	ITextShingle shingle = ShingleFactory.createShingle();
 
 	List<Set<String>> features;
 	List<Integer>[] cluster2Microblogs;
@@ -201,7 +202,7 @@ public class EventSummarization {
 		for (int i = 0; i < context.statuses.size(); i++) {
 			JSONObject curStatus = context.statuses.get(i);
 			try {
-				List<String> terms = shingle.shingling(curStatus.getString("text"));
+				List<String> terms = shingle.shingling(curStatus.getString("text"), false);
 				for (String term : terms) {
 					ret.put(term, ret.get(term) + 1);
 				}
@@ -224,7 +225,7 @@ public class EventSummarization {
 		for (int i = 0; i < context.statuses.size(); i++) {
 			JSONObject curStatus = context.statuses.get(i);
 			try {
-				List<String> terms = shingle.shingling(curStatus.getString("text"), true);
+				List<String> terms = shingle.shingling(curStatus.getString("text"), false);
 				Set<String> feature = new HashSet<String>();
 				for (String term : terms) {
 					if (wordDist.get(term) > 2) {
