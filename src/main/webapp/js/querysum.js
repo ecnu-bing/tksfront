@@ -1,7 +1,8 @@
 /**
  * Created by liye on 15/11/26. modified by xiafan
  */
-var startTime = 1451404800000;// 2015-12-30
+//var startTime = 1451404800000;// 2015-12-30
+var startTime = 1230739200000;// 2015-12-30
 var endTime = 0;
 var curEventIdx = 0;
 var eventTimeline = {
