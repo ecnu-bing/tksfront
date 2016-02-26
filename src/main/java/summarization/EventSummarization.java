@@ -28,11 +28,14 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import shingle.ITextShingle;
 import shingle.ShingleFactory;
+import summarization.outlier.ODinOutlierDetector;
 import util.DateUtil;
 import weka.clusterers.AbstractClusterer;
 import weka.clusterers.EM;
 import weka.clusterers.HierarchicalClusterer;
+import weka.clusterers.SimpleKMeans;
 import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
 
@@ -174,7 +177,19 @@ public class EventSummarization {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else if (context.clusterAlg.equals("kmeans")) {
+			cluster = new SimpleKMeans();
+			try {
+				String[] options = new String[2];
+				options[0] = "-N";
+				options[1] = Integer.toString(context.sumNum);
+				cluster.setOptions(options);
+				cluster.buildClusterer(dataset);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+
 		try {
 			cluster2Microblogs = new ArrayList[cluster.numberOfClusters()];
 			for (int i = 0; i < cluster2Microblogs.length; i++) {
@@ -189,6 +204,41 @@ public class EventSummarization {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static class ZScoreBasedOutlierDetector {
+		ArrayList[] cluster2Microblogs;
+		Instances dataset;
+
+		public ZScoreBasedOutlierDetector(ArrayList[] cluster2Microblogs, Instances dataset) {
+			this.cluster2Microblogs = cluster2Microblogs;
+			this.dataset = dataset;
+		}
+
+		public void exec() {
+			for (ArrayList cluster : cluster2Microblogs) {
+				SparseInstance instance = new SparseInstance(dataset.numAttributes());
+				for (int idx : (ArrayList<Integer>) cluster) {
+					Instance cur = dataset.get(idx);
+					for (int i = 0; i < cur.numAttributes(); i++) {
+						instance.setValue(i, instance.value(i) + cur.value(i));
+					}
+				}
+				for (int i = 0; i < instance.numAttributes(); i++) {
+					instance.setValue(i, instance.value(i) / cluster.size());
+				}
+
+			}
+		}
+	}
+
+	/**
+	 * 基于kmeans的原理，过滤异常点。 计算每个聚类中的点到中心点的距离，对于z-score超过2的点就应该从中提出。
+	 * 
+	 * @param cluster
+	 */
+	private void detectOutliers(AbstractClusterer cluster) {
+		// cluster.
 	}
 
 	private Map<String, Integer> wordDist() {
@@ -262,6 +312,14 @@ public class EventSummarization {
 				instance.setValue(term2Attr.get(term), 1);
 			}
 			dataset.add(instance);
+		}
+		ODinOutlierDetector detector = new ODinOutlierDetector();
+		Set<Integer> outliers = detector.outliers(dataset);
+		Instances pre = dataset;
+		dataset = new Instances("microblogs", attrs, 0);
+		for (int i = 0; i < pre.size(); i++) {
+			if (!outliers.contains(i))
+				dataset.add(pre.get(i));
 		}
 		return dataset;
 	}
