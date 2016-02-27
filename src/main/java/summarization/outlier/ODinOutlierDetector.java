@@ -28,8 +28,9 @@ public class ODinOutlierDetector implements OutlierDetector {
 	Double[][] distMatrix;
 	boolean[][] adj;
 
-	int k;
-	int indegree;
+	int k = 6;
+	int indegree = 0;
+	double maxDist = 0;
 
 	private void findOutlierByCC() {
 		boolean stop = false;
@@ -65,17 +66,18 @@ public class ODinOutlierDetector implements OutlierDetector {
 	}
 
 	private int[] scc(Double[][] distMatrix) {
+		maxDist = Math.sqrt(dataset.size());
 		int[] sc = new int[distMatrix.length];
 		Arrays.fill(sc, -1);
 		for (int i = 0; i < distMatrix.length; i++) {
-			if (sc[i] != -1) {
+			if (sc[i] == -1) {
 				Queue<Integer> vq = new LinkedList<Integer>();
 				vq.offer(i);
 				sc[i] = i;
 				while (!vq.isEmpty()) {
 					int curNode = vq.poll();
 					for (int j = 0; j < distMatrix.length; j++) {
-						if (distMatrix[curNode][j] != null && distMatrix[curNode][j] > 0 && sc[j] == -1) {
+						if (distMatrix[curNode][j] != null && distMatrix[curNode][j] == maxDist && sc[j] == -1) {
 							sc[j] = curNode;
 							vq.offer(j);
 						}
@@ -89,7 +91,9 @@ public class ODinOutlierDetector implements OutlierDetector {
 	private double dist(Instance instance, Instance instance2) {
 		double sum = 0;
 		for (int i = 0; i < instance.numAttributes(); i++) {
-			sum += Math.pow(instance.value(i) - instance2.value(i), 2.0);
+			double a = Double.isNaN(instance.value(i)) ? 0 : instance.value(i);
+			double b = Double.isNaN(instance2.value(i)) ? 0 : instance2.value(i);
+			sum += Math.pow(a - b, 2.0);
 		}
 		return Math.sqrt(sum);
 	}
@@ -101,14 +105,19 @@ public class ODinOutlierDetector implements OutlierDetector {
 	}
 
 	private void genKNNGraph() {
+		adj = new boolean[dataset.size()][dataset.size()];
 		for (int i = 0; i < dataset.size(); i++) {
 			if (!outlierSet.contains(i)) {
 				ArrayIndexComparator<Double> comp = new ArrayIndexComparator<Double>(distMatrix[i]);
 				Integer[] index = comp.createIndexArray();
 				Arrays.sort(index, comp);
-				for (int j = 0; i < k; j++) {
+				for (int j = 0; j < k; j++) {
+					if (distMatrix[i][index[j]] == null || distMatrix[i][index[j]] == maxDist)
+						break;
 					adj[index[j]][i] = true;
+					System.out.print(distMatrix[i][index[j]] + ",");
 				}
+				System.out.println();
 			}
 		}
 	}

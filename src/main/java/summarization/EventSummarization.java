@@ -320,6 +320,10 @@ public class EventSummarization {
 		for (int i = 0; i < pre.size(); i++) {
 			if (!outliers.contains(i))
 				dataset.add(pre.get(i));
+			else {
+				logger.info(context.statuses.get(i));
+				System.out.println(context.statuses.get(i));
+			}
 		}
 		return dataset;
 	}

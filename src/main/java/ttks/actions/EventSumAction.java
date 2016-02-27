@@ -117,6 +117,7 @@ public class EventSumAction {
 		TimeLine tline = sum.genTimeLine();
 		try {
 			timeline = JSONObject.fromObject(tline).toString();
+			System.out.println(timeline);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

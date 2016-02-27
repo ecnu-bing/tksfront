@@ -28,7 +28,12 @@ public class ArrayIndexComparator<T extends Comparable<T>> implements Comparator
 
 	@Override
 	public int compare(Integer index1, Integer index2) {
-		return 0 - array[index1].compareTo(array[index2]);
+		if (array[index1] == null) {
+			return 1;
+		} else if (array[index2] == null) {
+			return -1;
+		}
+		return array[index1].compareTo(array[index2]);
 	}
 
 }
