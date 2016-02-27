@@ -102,8 +102,8 @@ public class EventSumAction {
 					JSONObject statusReply = new JSONObject();
 					statusReply.put("text", obj.getString("text"));
 					statusReply.put("uname", obj.getString("uname"));
-					statusReply.put("mid", Long.parseLong(obj.getString("mid")));
-					statusReply.put("omid", Long.parseLong(obj.getString("omid")));
+					statusReply.put("mid", obj.getString("mid"));
+					statusReply.put("omid", obj.getString("omid"));
 					objs.add(statusReply);
 					List<long[]> sery = tweetDao.queryTimeSeries(mid, startTime, endTime);
 					ts.add(new SparseTimeSeries(sery, DateUtil.HOUR_GRANU, startTime, endTime));
