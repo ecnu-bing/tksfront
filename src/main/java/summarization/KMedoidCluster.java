@@ -24,7 +24,7 @@ public class KMedoidCluster {
 	int k = 10;
 	int realK;
 	int maxIter = 30;
-	Set<Integer> medoids;
+	BidiMap medoids;
 	Map<Integer, Integer> point2Cluster;
 	Instances dataset;
 
@@ -67,13 +67,14 @@ public class KMedoidCluster {
 	private void initGen() {
 		int realK = Math.min(dataset.size(), k);
 		Random rand = new Random();
-		medoids = new HashSet<Integer>();
+		medoids = new DualHashBidiMap();
 		point2Cluster = new HashMap<Integer, Integer>();
 
 		while (medoids.size() <= realK) {
 			int idx = Math.abs(rand.nextInt()) % dataset.size();
-			if (medoids.add(idx)) {
-				point2Cluster.put(idx, medoids.size() - 1);
+			if (!medoids.containsKey(idx)) {
+				point2Cluster.put(idx, medoids.size());
+				medoids.put(idx, medoids.size());
 			}
 		}
 	}
@@ -163,8 +164,8 @@ public class KMedoidCluster {
 		}
 
 		if (cenIdx != -1) {
-			medoids.add(cenIdx);
-			point2Cluster.put(cenIdx, medoids.size() - 1);
+			point2Cluster.put(cenIdx, medoids.size());
+			medoids.put(cenIdx, medoids.size());
 		}
 	}
 
@@ -177,10 +178,11 @@ public class KMedoidCluster {
 				Instance curData = dataset.get(i);
 				int minIdx = -1;
 				double minDist = Double.MAX_VALUE;
-				for (Integer mediod : medoids) {
-					double curDist = dist.dist(curData, dataset.get(mediod));
+				for (Object mediodObj : medoids.entrySet()) {
+					Entry<Integer, Integer> medoid = (Entry<Integer, Integer>) mediodObj;
+					double curDist = dist.dist(curData, dataset.get(medoid.getKey()));
 					if (curDist < minDist) {
-						minIdx = mediod;
+						minIdx = medoid.getValue();
 						minDist = curDist;
 					}
 				}
