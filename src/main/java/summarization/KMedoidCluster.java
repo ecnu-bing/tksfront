@@ -181,6 +181,7 @@ public class KMedoidCluster {
 					double curDist = dist.dist(curData, dataset.get(mediod));
 					if (curDist < minDist) {
 						minIdx = mediod;
+						minDist = curDist;
 					}
 				}
 				point2Cluster.put(i, minIdx);
