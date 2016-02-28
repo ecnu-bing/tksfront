@@ -173,7 +173,7 @@ public class KMedoidCluster {
 	 */
 	private void distribute() {
 		for (int i = 0; i < dataset.size(); i++) {
-			if (!outliers.contains(i)) {
+			if (!outliers.contains(i) && point2Cluster.containsKey(i)) {
 				Instance curData = dataset.get(i);
 				int minIdx = -1;
 				double minDist = Double.MAX_VALUE;
