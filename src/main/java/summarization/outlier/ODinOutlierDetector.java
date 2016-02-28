@@ -12,7 +12,8 @@ import org.apache.commons.collections.Factory;
 
 import collection.DefaultedPutMap;
 import common.ArrayIndexComparator;
-import weka.core.Instance;
+import common.Distance;
+import common.EcludeanDistance;
 import weka.core.Instances;
 
 /**
@@ -31,6 +32,7 @@ public class ODinOutlierDetector implements OutlierDetector {
 	int k = 6;
 	int indegree = 0;
 	double maxDist = 0;
+	Distance dist = new EcludeanDistance();
 
 	private void findOutlierByCC() {
 		boolean stop = false;
@@ -40,7 +42,7 @@ public class ODinOutlierDetector implements OutlierDetector {
 				if (!outlierSet.contains(i))
 					for (int j = i; j < dataset.size(); j++) {
 						if (!outlierSet.contains(j))
-							distMatrix[i][j] = dist(dataset.get(i), dataset.get(j));
+							distMatrix[i][j] = dist.dist(dataset.get(i), dataset.get(j));
 					}
 			}
 
@@ -86,16 +88,6 @@ public class ODinOutlierDetector implements OutlierDetector {
 			}
 		}
 		return sc;
-	}
-
-	private double dist(Instance instance, Instance instance2) {
-		double sum = 0;
-		for (int i = 0; i < instance.numAttributes(); i++) {
-			double a = Double.isNaN(instance.value(i)) ? 0 : instance.value(i);
-			double b = Double.isNaN(instance2.value(i)) ? 0 : instance2.value(i);
-			sum += Math.pow(a - b, 2.0);
-		}
-		return Math.sqrt(sum);
 	}
 
 	private void runOdin() {

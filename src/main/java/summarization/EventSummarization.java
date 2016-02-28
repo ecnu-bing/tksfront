@@ -143,6 +143,24 @@ public class EventSummarization {
 	 * 基于内容聚类？是否考虑时间，如何考虑
 	 */
 	private void clusterMicroblogs(Instances dataset) {
+		if (context.clusterAlg.equals("kmeans_outlier")) {
+			KMedoidCluster cluster = new KMedoidCluster();
+			if (context.sumNum > 0)
+				cluster.setK(context.sumNum);
+			cluster.cluster(dataset);
+
+			cluster2Microblogs = new ArrayList[cluster.numberOfClusters()];
+			for (int i = 0; i < cluster2Microblogs.length; i++) {
+				cluster2Microblogs[i] = new ArrayList<Integer>();
+			}
+			clusterDist = new int[cluster.numberOfClusters()];
+			for (Entry<Integer, Integer> entry : cluster.getPoint2Cluster().entrySet()) {
+				cluster2Microblogs[entry.getValue()].add(entry.getKey());
+				clusterDist[entry.getValue()]++;
+			}
+			return;
+		}
+
 		AbstractClusterer cluster = null;
 		if (context.clusterAlg.equals("EM")) {
 			cluster = new EM();
