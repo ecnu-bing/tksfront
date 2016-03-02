@@ -19,7 +19,7 @@ import casdb.CassandraConn;
 import casdb.TweetDao;
 import common.ConfigLoader;
 import dase.timeseries.structure.SparseTimeSeries;
-import summarization.EventSummarization;
+import summarization.ClusterSummarization;
 import util.DateUtil;
 import weibo4j.org.json.JSONObject;
 

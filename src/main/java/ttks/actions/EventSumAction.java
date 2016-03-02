@@ -14,8 +14,8 @@ import dase.timeseries.structure.ITimeSeries;
 import dase.timeseries.structure.SparseTimeSeries;
 import net.sf.json.JSONObject;
 import searchapi.QueryType;
-import summarization.EventSummarization;
-import summarization.EventSummarization.SumContext;
+import summarization.ClusterSummarization;
+import summarization.ClusterSummarization.SumContext;
 import summarization.TimeLine;
 import util.DateUtil;
 
@@ -85,7 +85,7 @@ public class EventSumAction {
 		context.shouldStandard = shouldStandard;
 		context.simType = simType;
 		context.simThreshold = simThreshold;
-		EventSummarization sum = new EventSummarization(context, conn);
+		ClusterSummarization sum = new ClusterSummarization(context, conn);
 
 		TweetDao tweetDao = new TweetDao(conn);
 		List<Long> mids = TemporalKeywordSearch.execQuery(keyword, topk, startTime, endTime, QueryType.WEIGHTED);

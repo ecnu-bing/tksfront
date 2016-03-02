@@ -31,7 +31,6 @@ public class ODinOutlierDetector implements OutlierDetector {
 
 	int k = 6;
 	int indegree = 0;
-	double maxDist = 0;
 	Distance dist = new EcludeanDistance();
 
 	private void findOutlierByCC() {
@@ -68,7 +67,6 @@ public class ODinOutlierDetector implements OutlierDetector {
 	}
 
 	private int[] scc(Double[][] distMatrix) {
-		maxDist = Math.sqrt(dataset.size());
 		int[] sc = new int[distMatrix.length];
 		Arrays.fill(sc, -1);
 		for (int i = 0; i < distMatrix.length; i++) {
@@ -79,7 +77,7 @@ public class ODinOutlierDetector implements OutlierDetector {
 				while (!vq.isEmpty()) {
 					int curNode = vq.poll();
 					for (int j = 0; j < distMatrix.length; j++) {
-						if (distMatrix[curNode][j] != null && distMatrix[curNode][j] == maxDist && sc[j] == -1) {
+						if (distMatrix[curNode][j] != null && distMatrix[curNode][j] == 1 && sc[j] == -1) {
 							sc[j] = curNode;
 							vq.offer(j);
 						}
@@ -104,7 +102,7 @@ public class ODinOutlierDetector implements OutlierDetector {
 				Integer[] index = comp.createIndexArray();
 				Arrays.sort(index, comp);
 				for (int j = 0; j < k; j++) {
-					if (distMatrix[i][index[j]] == null || distMatrix[i][index[j]] == maxDist)
+					if (distMatrix[i][index[j]] == null || distMatrix[i][index[j]] == 1)
 						break;
 					adj[index[j]][i] = true;
 					System.out.print(distMatrix[i][index[j]] + ",");

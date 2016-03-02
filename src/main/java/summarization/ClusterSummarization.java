@@ -54,8 +54,8 @@ import weka.core.SparseInstance;
  * @author xiafan
  *
  */
-public class EventSummarization {
-	private static final Logger logger = Logger.getLogger(EventSummarization.class);
+public class ClusterSummarization implements IEventSummarization {
+	private static final Logger logger = Logger.getLogger(ClusterSummarization.class);
 	SumContext context;
 
 	TweetDao dao;
@@ -67,12 +67,13 @@ public class EventSummarization {
 	int[] clusterDist;
 	public HashMap<String, ITimeSeries> term2ts = new HashMap<String, ITimeSeries>();
 
-	public EventSummarization(SumContext context, CassandraConn conn) {
+	public ClusterSummarization(SumContext context, CassandraConn conn) {
 		this.context = context;
 		dao = new TweetDao(conn);
 		wordDao = new WordDao(conn);
 	}
 
+	@Override
 	public TimeLine genTimeLine() {
 		List<ITimeSeries> oSer = context.ts;
 		if (context.shouldStandard) {
@@ -116,6 +117,7 @@ public class EventSummarization {
 				timeline.addEvent(eStatues, sumWords, timeRange);
 			}
 		}
+
 		System.out.println("gen timeline complete");
 		return timeline;
 	}

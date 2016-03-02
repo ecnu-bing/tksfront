@@ -53,7 +53,16 @@ public class KMedoidCluster {
 		}
 	}
 
+	/**
+	 * 每个异常点单独作为一个cluster
+	 * 
+	 * @return
+	 */
 	public Map<Integer, Integer> getPoint2Cluster() {
+		for (Integer outlier : outliers) {
+			point2Cluster.put(outlier, medoids.size());
+			medoids.put(outlier, medoids.size());
+		}
 		return point2Cluster;
 	}
 
